@@ -19,7 +19,7 @@ public class WeaponPickupScript : MonoBehaviour {
 
     void OnTriggerEnter(Collider c)
     {
-        if (c.gameObject.tag == "Player" && justSpawned == null)
+        if ((c.gameObject.tag == "Player" || c.gameObject.tag == "Enemy") && justSpawned == null)
         {
             c.gameObject.GetComponent<WeaponScript>().AddWeapon(weaponType, dmg);
             Destroy(gameObject);
