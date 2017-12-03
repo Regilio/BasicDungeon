@@ -34,7 +34,8 @@ public class WeaponScript : MonoBehaviour {
     float bulletTimer = 0;
 
     bool canAttackSword = true;
-    public float swordCooldownTime = 0.3f;
+    public float swordCooldownTime = 0.5f;
+    public float swordColliderTimer = 0.2f;
     float swordTimer = 0;
 
     // Use this for initialization
@@ -44,6 +45,10 @@ public class WeaponScript : MonoBehaviour {
 
         foreach (HeldWeapon weapon in HeldWeapons)
         {
+            if (weapon.Type == "Sword")
+            {
+                weapon.WeaponGameObject.GetComponent<BoxCollider>().enabled = false;
+            }
             weapon.WeaponGameObject.SetActive(false);
         }
         laser = laserTransform.GetComponent<LineRenderer>();
@@ -92,6 +97,11 @@ public class WeaponScript : MonoBehaviour {
                         hit.transform.gameObject.GetComponent<HealthScript>().Hit(currentWeaponDmg);
                         laserDealtDmg = true;
                     }
+                    if (hit.transform.gameObject.tag == "Enemy" && whoCanIAttack == "Enemy" && !laserDealtDmg)
+                    {
+                        hit.transform.gameObject.GetComponent<EnemyHealthScript>().Hit(currentWeaponDmg);
+                        laserDealtDmg = true;
+                    }
                 }
                 else
                 {
@@ -127,6 +137,15 @@ public class WeaponScript : MonoBehaviour {
         {
             swordTimer += Time.deltaTime;
 
+            if(swordTimer > swordColliderTimer)
+            foreach (HeldWeapon weapon in HeldWeapons)
+            {
+                if (weapon.Type == "Sword")
+                {
+                    weapon.WeaponGameObject.GetComponent<BoxCollider>().enabled = false;
+                }
+            }
+
             if (swordTimer > swordCooldownTime)
             {
                 swordTimer = 0;
@@ -147,6 +166,9 @@ public class WeaponScript : MonoBehaviour {
                 {
                     Animator swordAnim = weapon.WeaponGameObject.GetComponent<Animator>();
                     swordAnim.SetTrigger("Attack");
+                    weapon.WeaponGameObject.GetComponent<BoxCollider>().enabled = true;
+                    weapon.WeaponGameObject.GetComponent<SwordCollisionScript>().damage = currentWeaponDmg;
+                    weapon.WeaponGameObject.GetComponent<SwordCollisionScript>().whoCanIAttack = whoCanIAttack;
                 }
             }
         }
@@ -216,7 +238,7 @@ public class WeaponScript : MonoBehaviour {
         }
     }
 
-    public void DropWeapon()
+    public void DropWeapon(bool death = false)
     {
         if (holdingWeapon)
         {
@@ -231,8 +253,12 @@ public class WeaponScript : MonoBehaviour {
                 {
                     GameObject newWeapon = Instantiate(weapon.WeaponPrefab, new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, gameObject.transform.position.z), Quaternion.identity) as GameObject;
                     //Debug.Log("name = "+newWeapon.name);
-                    newWeapon.GetComponent<WeaponPickupScript>().justSpawned = this.gameObject;
-                    newWeapon.GetComponent<WeaponPickupScript>().GetComponentInChildren<Light>().enabled = false;
+                    if (!death)
+                    {
+                        newWeapon.GetComponent<WeaponPickupScript>().justSpawned = this.gameObject;
+                        newWeapon.GetComponent<WeaponPickupScript>().GetComponentInChildren<Light>().enabled = false;
+
+                    }
 
 
                 }
